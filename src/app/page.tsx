@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { bot } from '~/server/bot';
-bot
+bot;
 
 export default function Home() {
   return (

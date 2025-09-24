@@ -52,5 +52,3 @@ bot.command('start', async (ctx) => {
   const mes = await ctx.reply('Пришли мне гс и я его сокращу');
   console.log(mes);
 });
-
-bot.start();
