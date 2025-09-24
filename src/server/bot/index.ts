@@ -11,7 +11,7 @@ export const bot = new Bot(token);
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-export async function getGroqChatCompletion(text: string) {
+async function getGroqChatCompletion(text: string) {
   return groq.chat.completions.create({
     messages: [
       {
