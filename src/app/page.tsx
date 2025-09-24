@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { bot } from '~/server/bot';
-bot;
+import '~/server/bot/config';
 
 export default function Home() {
   return (
