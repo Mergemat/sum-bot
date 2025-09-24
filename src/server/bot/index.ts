@@ -7,15 +7,31 @@ export const { TELEGRAM_BOT_TOKEN: token } = env;
 export const secretToken = String(token).split(':').pop();
 
 // Default grammY bot instance
-export const bot = new Bot(token, {
-  client: {
-    environment: env.NODE_ENV === 'development' ? 'test' : 'prod',
-  },
-});
+export const bot = new Bot(token);
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
+export async function getGroqChatCompletion(text: string) {
+  return groq.chat.completions.create({
+    messages: [
+      {
+        role: 'system',
+        content:
+          'You are a helpful assistant that summarizes text. User will send you a transcript of a voice message and you will summarize it. Answer in Russian language only',
+      },
+      {
+        role: 'user',
+
+        content: text,
+      },
+    ],
+
+    model: 'openai/gpt-oss-120b',
+  });
+}
+
 bot.on('message:voice', async (ctx) => {
+  await ctx.replyWithChatAction('typing');
   const file = await ctx.getFile();
   const url = `https://api.telegram.org/file/bot${token}/${file.file_path}`;
 
@@ -24,36 +40,16 @@ bot.on('message:voice', async (ctx) => {
     model: 'whisper-large-v3-turbo',
   });
 
-  await ctx.reply(result.text);
+  const summary = await getGroqChatCompletion(result.text);
+
+  await ctx.reply(summary.choices[0]?.message.content ?? '', {
+    parse_mode: 'Markdown',
+  });
 });
 
 // Sample handler for a simple echo bot
 bot.command('start', async (ctx) => {
-  const mes = await ctx.reply(
-    `Привет! Совместимы ли вы в отношениях? 📊 Подходите ли вы друг другу в бизнесе?\n
-Никакой магии — только расчёт. Начнем?`,
-    {
-      parse_mode: 'Markdown',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            {
-              web_app: { url: 'https://numio-one.vercel.app/' },
-              text: '🔢 Открыть приложение',
-            },
-            ...(env.NODE_ENV === 'development'
-              ? [
-                  {
-                    web_app: { url: 'http://127.0.0.1:3000' },
-                    text: 'Start bot',
-                  },
-                ]
-              : []),
-          ],
-        ],
-      },
-    },
-  );
+  const mes = await ctx.reply('Пришли мне гс и я его сокращу');
   console.log(mes);
 });
 
